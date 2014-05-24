@@ -45,9 +45,6 @@ except (ImportError, SystemError, RuntimeError, Exception):
 from portage import os
 from portage import _encodings
 from portage import _unicode_encode
-import repoman.argparser
-from repoman.argparser import parse_args
-from repoman import utilities
 from _emerge.Package import Package
 from _emerge.RootConfig import RootConfig
 from _emerge.UserQuery import UserQuery
@@ -67,6 +64,7 @@ from portage.util import writemsg_level
 from portage.package.ebuild.digestgen import digestgen
 from portage.eapi import eapi_has_iuse_defaults, eapi_has_required_use
 
+from repoman.argparser import parse_args
 from repoman.checks.ebuilds import run_checks, checks_init
 from repoman.checks.herds.herdbase import make_herd_base
 from repoman.metadata import (fetch_metadata_dtd, metadata_xml_encoding,
@@ -75,6 +73,7 @@ from repoman.profile import dev_keywords, ProfileDesc, valid_profile_types
 from repoman.qa_data import (qahelp, qawarnings, qacats, no_exec, allvars,
 	max_desc_len, missingvars, suspect_virtual, suspect_rdepend, valid_restrict)
 from repoman.subprocess import repoman_popen, repoman_getstatusoutput
+from repoman import utilities
 from repoman.vcs import (vcs_files_to_cps, vcs_new_changed,
 	git_supports_gpg_sign, ruby_deprecated)
 from repoman._xml import _XMLParser, _MetadataTreeBuilder, metadata_dtd_uri
