@@ -47,8 +47,6 @@ from portage import _encodings
 from portage import _unicode_encode
 import repoman.argparser
 from repoman.argparser import parse_args
-import repoman.checks
-from repoman.checks import run_checks
 from repoman import utilities
 from repoman.herdbase import make_herd_base
 from _emerge.Package import Package
@@ -70,6 +68,7 @@ from portage.util import writemsg_level
 from portage.package.ebuild.digestgen import digestgen
 from portage.eapi import eapi_has_iuse_defaults, eapi_has_required_use
 
+from repoman.checks.ebuilds import run_checks, checks_init
 from repoman.metadata import (fetch_metadata_dtd, metadata_xml_encoding,
 	metadata_doctype_name, metadata_xml_declaration)
 from repoman.profile import dev_keywords, ProfileDesc, valid_profile_types
@@ -139,7 +138,7 @@ if options.version:
 if options.experimental_inherit == 'y':
 	# This is experimental, so it's non-fatal.
 	qawarnings.add("inherit.missing")
-	repoman.checks._init(experimental_inherit=True)
+	checks_init(experimental_inherit=True)
 
 # Set this to False when an extraordinary issue (generally
 # something other than a QA issue) makes it impossible to
