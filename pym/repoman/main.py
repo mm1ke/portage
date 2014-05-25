@@ -15,7 +15,6 @@ import stat
 import subprocess
 import sys
 import tempfile
-import textwrap
 import platform
 from itertools import chain
 from stat import S_ISDIR
