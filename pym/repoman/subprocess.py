@@ -5,7 +5,7 @@ import subprocess
 import sys
 
 import portage
-from pportage import os
+from portage import os
 from portage.process import find_binary
 from portage import _encodings, _unicode_encode
 
