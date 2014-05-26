@@ -65,7 +65,7 @@ from portage.package.ebuild.digestgen import digestgen
 from portage.eapi import eapi_has_iuse_defaults, eapi_has_required_use
 
 from repoman.argparser import parse_args
-from repoman.checks.ebuilds import run_checks, checks_init
+from repoman.checks.ebuilds.checks import run_checks, checks_init
 from repoman.checks.herds.herdbase import make_herd_base
 from repoman.errors import caterror, err
 from repoman.metadata import (fetch_metadata_dtd, metadata_xml_encoding,
