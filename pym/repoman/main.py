@@ -97,17 +97,6 @@ if repoman_settings.get("NOCOLOR", "").lower() in ("yes", "true") or \
 	not sys.stdout.isatty():
 	nocolor()
 
-
-def exithandler(signum=None, _frame=None):
-	logging.fatal("Interrupted; exiting...")
-	if signum is None:
-		sys.exit(1)
-	else:
-		sys.exit(128 + signum)
-
-
-signal.signal(signal.SIGINT, exithandler)
-
 options, arguments = parse_args(
 	sys.argv, qahelp, repoman_settings.get("REPOMAN_DEFAULT_OPTS", ""))
 
@@ -210,7 +199,6 @@ if repolevel == 1:
 else:
 	startdir = normalize_path(mydir)
 	startdir = os.path.join(repo_settings.repodir, *startdir.split(os.sep)[-2 - repolevel + 3:])
-
 ###################
 
 # get lists of valid keywords, licenses, and use
@@ -299,7 +287,7 @@ for xpkg in effective_scanlist:
 	if manifester.run(checkdir, portdb):
 		continue
 	if not manifester.generated_manifest:
-		 manifester.digest_check(checkdir)
+		 manifester.digest_check(xpkg, checkdir)
 ######################
 
 	if options.mode == 'manifest-check':
