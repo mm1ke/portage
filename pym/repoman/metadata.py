@@ -1,6 +1,7 @@
 
 import errno
 import logging
+import sys
 import tempfile
 import time
 
@@ -15,6 +16,8 @@ from portage import exception
 from portage import os
 from portage.output import green
 
+if sys.hexversion >= 0x3000000:
+	basestring = str
 
 metadata_xml_encoding = 'UTF-8'
 metadata_xml_declaration = '<?xml version="1.0" encoding="%s"?>' \

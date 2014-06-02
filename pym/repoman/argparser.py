@@ -4,6 +4,7 @@
 
 """This module contains functions used in Repoman to parse CLI arguments."""
 
+import logging
 import portage
 from portage import util
 from portage.util._argparse import ArgumentParser
