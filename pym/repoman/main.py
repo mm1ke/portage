@@ -333,8 +333,8 @@ for xpkg in effective_scanlist:
 
 #####################
 	manifester = Manifests(options, repoman_settings)
-	skip = manifester.run(checkdir, portdb)
-	if skip:
+	continue_ = manifester.run(checkdir, portdb)
+	if continue_:
 		continue
 ######################
 
