@@ -5,10 +5,14 @@
 """This module contains functions used in Repoman to parse CLI arguments."""
 
 import logging
-import portage
 import sys
+
+# import our initialized portage instance
+from repoman._portage import portage
+
 from portage import util
 from portage.util._argparse import ArgumentParser
+
 
 def parse_args(argv, qahelp, repoman_default_opts):
 	"""Use a customized optionParser to parse command line arguments for repoman
