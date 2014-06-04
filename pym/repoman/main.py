@@ -49,6 +49,7 @@ from repoman.argparser import parse_args
 from repoman.checks.directories.files import FileChecks
 from repoman.checks.ebuilds.checks import run_checks, checks_init
 from repoman.checks.ebuilds.fetches import FetchChecks
+from repoman.checks.ebuilds.keywords import KeywordChecks
 from repoman.checks.ebuilds.isebuild import IsEbuild
 from repoman.checks.ebuilds.thirdpartymirrors import ThirdPartyMirrors
 from repoman.checks.ebuilds.manifests import Manifests
@@ -281,7 +282,7 @@ fetchcheck = FetchChecks(qatracker, repoman_settings, repo_settings, portdb,
 pkgmeta = PkgMetadata(options, qatracker, repoman_settings)
 thirdparty = ThirdPartyMirrors(repoman_settings, qatracker)
 use_flag_checks = USEFlagChecks(qatracker, uselist)
-
+keywordcheck = KeywordChecks(qatracker)
 
 for xpkg in effective_scanlist:
 	# ebuilds and digests added to cvs respectively.
@@ -322,7 +323,7 @@ for xpkg in effective_scanlist:
 		continue
 ######################
 
-	slot_keywords = {}
+	keywordcheck.prepare()
 
 	# Sort ebuilds in ascending order for the KEYWORDS.dropped check.
 	ebuildlist = sorted(pkgs.values())
@@ -427,32 +428,15 @@ for xpkg in effective_scanlist:
 				(ebuild.relative_path, len(myaux['DESCRIPTION']), max_desc_len))
 
 		keywords = myaux["KEYWORDS"].split()
-		stable_keywords = []
-		for keyword in keywords:
-			if not keyword.startswith("~") and \
-				not keyword.startswith("-"):
-				stable_keywords.append(keyword)
-		if stable_keywords:
-			if ebuild.ebuild_path in changed.new_ebuilds and catdir != "virtual":
-				stable_keywords.sort()
-				qatracker.add_error("KEYWORDS.stable",
-					"%s/%s.ebuild added with stable keywords: %s" %
-					(xpkg, y_ebuild, " ".join(stable_keywords)))
 
 		ebuild_archs = set(
 			kw.lstrip("~") for kw in keywords if not kw.startswith("-"))
 
-		previous_keywords = slot_keywords.get(pkg.slot)
-		if previous_keywords is None:
-			slot_keywords[pkg.slot] = set()
-		elif ebuild_archs and "*" not in ebuild_archs and not live_ebuild:
-			dropped_keywords = previous_keywords.difference(ebuild_archs)
-			if dropped_keywords:
-				qatracker.add_error("KEYWORDS.dropped",
-					"%s: %s" %
-					(ebuild.relative_path, " ".join(sorted(dropped_keywords))))
-
-		slot_keywords[pkg.slot].update(ebuild_archs)
+		#######################
+		keywordcheck.check(
+			pkg, xpkg, ebuild, y_ebuild, keywords, ebuild_archs, changed,
+			live_ebuild)
+		#######################
 
 		# KEYWORDS="-*" is a stupid replacement for package.mask
 		# and screws general KEYWORDS semantics
