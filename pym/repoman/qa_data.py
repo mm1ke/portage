@@ -6,8 +6,6 @@ from _emerge.Package import Package
 # import our initialized portage instance
 from repoman._portage import portage
 
-
-
 # 14 is the length of DESCRIPTION=""
 max_desc_len = 100
 allowed_filename_chars = "a-zA-Z0-9._-+:"
@@ -426,5 +424,3 @@ def format_qa_output_column(
 			for failure in fails_list:
 				formatter.add_literal_data(category + " " + failure)
 				formatter.add_line_break()
-
-
