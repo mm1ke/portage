@@ -553,11 +553,12 @@ for xpkg in effective_scanlist:
 								(mytype, suspect_virtual[atom.cp], atom))
 						if not is_blocker and \
 							atom.cp.startswith("perl-core/"):
-							stats['dependency.perlcore'] += 1
-							fails['dependency.perlcore'].append(
+							qatracker.add_error('dependency.perlcore',
 								ebuild.relative_path +
 								": %s: please use '%s' instead of '%s'" %
-								(mytype, atom.replace("perl-core/","virtual/perl-"), atom))
+								(mytype,
+								atom.replace("perl-core/","virtual/perl-"),
+								atom))
 
 					if buildtime and \
 						not is_blocker and \
