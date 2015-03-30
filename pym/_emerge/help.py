@@ -23,3 +23,4 @@ def help():
 	print(bold("Actions:")+"  [ "+green("--depclean")+" | "+green("--list-sets")+" | "+green("--search")+" | "+green("--sync")+" | "+green("--version")+"        ]")
 	print()
 	print("   For more help consult the man page.")
+        print("   Changed for testing purpose!")
