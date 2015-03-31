@@ -260,6 +260,8 @@ def insert_optional_args(args):
 			# might contain another match.
 			arg_stack.append("-" + saved_opts)
 
+                print(new_args)
+
 	return new_args
 
 def _find_bad_atoms(atoms, less_strict=False):
