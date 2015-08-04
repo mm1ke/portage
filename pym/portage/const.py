@@ -158,6 +158,7 @@ SUPPORTED_FEATURES       = frozenset([
 	"mirror",
 	"multilib-strict",
 	"network-sandbox",
+	"network-sandbox-proxy",
 	"news",
 	"noauto",
 	"noclean",
@@ -276,6 +277,8 @@ TIMESTAMP_FORMAT = "%a, %d %b %Y %H:%M:%S +0000"	# to be used with time.gmtime()
 
 # Top-level names of Python packages installed by Portage.
 PORTAGE_PYM_PACKAGES = ("_emerge", "portage", "repoman")
+
+RETURNCODE_POSTINST_FAILURE = 5
 
 # ===========================================================================
 # END OF CONSTANTS -- END OF CONSTANTS -- END OF CONSTANTS -- END OF CONSTANT

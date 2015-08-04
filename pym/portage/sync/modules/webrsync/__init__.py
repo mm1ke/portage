@@ -30,8 +30,8 @@ module_spec = {
 	'name': 'webrsync',
 	'description': doc,
 	'provides':{
-		'websync-module': {
-			'name': "websync",
+		'webrsync-module': {
+			'name': "webrsync",
 			'class': config_class,
 			'description': doc,
 			'functions': ['sync', 'new', 'exists'],
@@ -44,6 +44,7 @@ module_spec = {
 					'exists and is a valid repository',
 			},
 			'validate_config': CheckSyncConfig,
+			'module_specific_options': (),
 		},
 	}
 }

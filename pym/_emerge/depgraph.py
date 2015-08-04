@@ -31,6 +31,7 @@ from portage.eapi import eapi_has_strong_blocks, eapi_has_required_use, \
 	_get_eapi_attrs
 from portage.exception import (InvalidAtom, InvalidData, InvalidDependString,
 	PackageNotFound, PortageException)
+from portage.localization import _
 from portage.output import colorize, create_color_func, \
 	darkgreen, green
 bad = create_color_func("BAD")
@@ -2799,7 +2800,7 @@ class depgraph(object):
 
 		dep.want_update = (not self._dynamic_config._complete_mode and
 			(arg_atoms or update) and
-			not (deep is not True and depth > deep))
+			not self._too_deep(depth))
 
 		dep.child = pkg
 		if not pkg.onlydeps and dep.atom and (
@@ -2807,7 +2808,8 @@ class depgraph(object):
 			dep.atom.slot_operator == "="):
 			self._add_slot_operator_dep(dep)
 
-		recurse = deep is True or depth + 1 <= deep
+		recurse = (deep is True or
+			not self._too_deep(self._depth_increment(depth, n=1)))
 		dep_stack = self._dynamic_config._dep_stack
 		if "recurse" not in self._dynamic_config.myparams:
 			return 1
@@ -3631,14 +3633,18 @@ class depgraph(object):
 					writemsg(colorize("BAD", "\n*** Package is missing CATEGORY metadata: %s.\n\n" % x), noiselevel=-1)
 					self._dynamic_config._skip_restart = True
 					return 0, myfavorites
-				elif os.path.realpath(x) != \
-					os.path.realpath(bindb.bintree.getname(mykey)):
-					writemsg(colorize("BAD", "\n*** You need to adjust PKGDIR to emerge this package.\n\n"), noiselevel=-1)
+
+				x = os.path.realpath(x)
+				for pkg in self._iter_match_pkgs(root_config, "binary", Atom('=%s' % mykey)):
+					if x == os.path.realpath(bindb.bintree.getname(pkg.cpv)):
+						break
+				else:
+					writemsg("\n%s\n\n" % colorize("BAD",
+						"*** " + _("You need to adjust PKGDIR to emerge "
+						"this package: %s") % x), noiselevel=-1)
 					self._dynamic_config._skip_restart = True
 					return 0, myfavorites
 
-				pkg = self._pkg(mykey, "binary", root_config,
-					onlydeps=onlydeps)
 				args.append(PackageArg(arg=x, package=pkg,
 					root_config=root_config))
 			elif ext==".ebuild":
@@ -5348,12 +5354,37 @@ class depgraph(object):
 					depth = 0
 					break
 
-		deep = self._dynamic_config.myparams.get("deep", 0)
 		update = "--update" in self._frozen_config.myopts
 
 		return (not self._dynamic_config._complete_mode and
 			(arg_atoms or update) and
-			not (deep is not True and depth > deep))
+			not self._too_deep(depth))
+
+	def _too_deep(self, depth):
+		"""
+		Check if a package depth is deeper than the max allowed depth.
+
+		@param depth: the depth of a particular package
+		@type depth: int or _UNREACHABLE_DEPTH
+		@rtype: bool
+		@return: True if the package is deeper than the max allowed depth
+		"""
+		deep = self._dynamic_config.myparams.get("deep", 0)
+		return depth is self._UNREACHABLE_DEPTH or (
+			isinstance(deep, int) and isinstance(depth, int) and depth > deep)
+
+	def _depth_increment(self, depth, n=1):
+		"""
+		Return depth + n if depth is an int, otherwise return depth.
+
+		@param depth: the depth of a particular package
+		@type depth: int or _UNREACHABLE_DEPTH
+		@param n: number to add (default is 1)
+		@type n: int
+		@rtype: int or _UNREACHABLE_DEPTH
+		@return: depth + 1 or _UNREACHABLE_DEPTH
+		"""
+		return depth + n if isinstance(depth, int) else depth
 
 	def _equiv_ebuild_visible(self, pkg, autounmask_level=None):
 		try:
