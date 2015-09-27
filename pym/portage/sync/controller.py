@@ -21,6 +21,7 @@ bad = create_color_func("BAD")
 warn = create_color_func("WARN")
 from portage.package.ebuild.doebuild import _check_temp_dir
 from portage.metadata import action_metadata
+from portage.util._async.AsyncFunction import AsyncFunction
 from portage import OrderedDict
 from portage import _unicode_decode
 from portage import util
@@ -113,12 +114,21 @@ class SyncManager(object):
 			return desc
 		return []
 
-
-	def sync(self, emerge_config=None, repo=None, callback=None):
+	def async(self, emerge_config=None, repo=None):
 		self.emerge_config = emerge_config
-		self.callback = callback or self._sync_callback
+		self.settings, self.trees, self.mtimedb = emerge_config
+		self.xterm_titles = "notitles" not in self.settings.features
+		self.portdb = self.trees[self.settings['EROOT']]['porttree'].dbapi
+		proc = AsyncFunction(target=self.sync,
+			kwargs=dict(emerge_config=emerge_config, repo=repo))
+		proc.addExitListener(self._sync_callback)
+		return proc
+
+	def sync(self, emerge_config=None, repo=None):
+		self.callback = None
 		self.repo = repo
 		self.exitcode = 1
+		self.updatecache_flg = False
 		if repo.sync_type in self.module_names:
 			tasks = [self.module_controller.get_class(repo.sync_type)]
 		else:
@@ -149,13 +159,14 @@ class SyncManager(object):
 
 		self.perform_post_sync_hook(repo.name, repo.sync_uri, repo.location)
 
-		return self.exitcode, None
+		return self.exitcode, None, self.updatecache_flg
 
 
 	def do_callback(self, result):
 		#print("result:", result, "callback()", self.callback)
 		exitcode, updatecache_flg = result
 		self.exitcode = exitcode
+		self.updatecache_flg = updatecache_flg
 		if exitcode == 0:
 			msg = "=== Sync completed for %s" % self.repo.name
 			self.logger(self.xterm_titles, msg)
@@ -191,13 +202,10 @@ class SyncManager(object):
 
 
 	def pre_sync(self, repo):
-		self.settings, self.trees, self.mtimedb = self.emerge_config
-		self.xterm_titles = "notitles" not in self.settings.features
 		msg = ">>> Syncing repository '%s' into '%s'..." \
 			% (repo.name, repo.location)
 		self.logger(self.xterm_titles, msg)
 		writemsg_level(msg + "\n")
-		self.portdb = self.trees[self.settings['EROOT']]['porttree'].dbapi
 		try:
 			st = os.stat(repo.location)
 		except OSError:
@@ -310,17 +318,28 @@ class SyncManager(object):
 		os.umask(0o022)
 		return os.EX_OK
 
+	def _sync_callback(self, proc):
+		"""
+		This is called in the parent process, serially, for each of the
+		sync jobs when they complete. Some cache backends such as sqlite
+		may require that cache access be performed serially in the
+		parent process like this.
+		"""
+		repo = proc.kwargs['repo']
+		exitcode = proc.returncode
+		updatecache_flg = False
+		if proc.returncode == os.EX_OK:
+			exitcode, message, updatecache_flg = proc.result
 
-	def _sync_callback(self, exitcode, updatecache_flg):
 		if updatecache_flg and "metadata-transfer" not in self.settings.features:
 			updatecache_flg = False
 
 		if updatecache_flg and \
 			os.path.exists(os.path.join(
-			self.repo.location, 'metadata', 'md5-cache')):
+			repo.location, 'metadata', 'md5-cache')):
 
 			# Only update cache for repo.location since that's
 			# the only one that's been synced here.
 			action_metadata(self.settings, self.portdb, self.emerge_config.opts,
-				porttrees=[self.repo.location])
+				porttrees=[repo.location])
 

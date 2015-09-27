@@ -508,7 +508,7 @@ class RepoConfigLoader(object):
 							'force', 'masters', 'priority',
 							'sync_depth',
 							'sync_type', 'sync_umask', 'sync_uri', 'sync_user',
-							) + tuple(portage.sync.module_specific_options(repo)):
+							'module_specific_options'):
 							v = getattr(repos_conf_opts, k, None)
 							if v is not None:
 								setattr(repo, k, v)
@@ -601,7 +601,8 @@ class RepoConfigLoader(object):
 
 			repo = RepoConfig(sname, optdict, local_config=local_config)
 			for o in portage.sync.module_specific_options(repo):
-				repo.set_module_specific_opt(o, parser.get(sname, o))
+				if parser.has_option(sname, o):
+					repo.set_module_specific_opt(o, parser.get(sname, o))
 
 			# Perform repos.conf sync variable validation
 			portage.sync.validate_config(repo, logging)
